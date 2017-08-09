@@ -13,6 +13,7 @@
 
 */
 
+
 var request = require('request'),
   rp = require('request-promise'),
   mobileService = require('./mobile'),
@@ -34,6 +35,9 @@ var request = require('request'),
   }
 exports.sms = function () {
   var smsFunctions = _ = {
+  	generateMessageContent: function(message) { // i only added generateMessageContent function and modified the code to call it.
+		return({ message: message});
+	}
     sendIt: function (message, mobile) {
       if (process.env.NODE_ENV !== 'PROD') {
         return ;
@@ -42,141 +46,104 @@ exports.sms = function () {
       mobileService.sendSMS(message);
     },
     cancel: function (don) {
-      var messageContent = {
-        message: 'يؤسفنا إلغائك طلبك رقم : ' + don.orderNumber + '\nلا تتردد في ارسال أي ملاحظة  على support@autotash.net \nشكرا لك.'
-      };
+      var messageContent = this.generateMessageContent('يؤسفنا إلغائك طلبك رقم : ' + don.orderNumber + '\nلا تتردد في ارسال أي ملاحظة  على support@autotash.net \nشكرا لك.');
       this.sendIt(messageContent, don.mobile);
     },
     success: function (don) {
-      var messageContent = {
-        message: 'شكرا لك\nطلبك وصل\nمندوبينا شغالين على التسعير\nرقم طلبك : ' + don.orderNumber
-      };
+      var messageContent = this.generateMessageContent('شكرا لك\nطلبك وصل\nمندوبينا شغالين على التسعير\nرقم طلبك : ' + don.orderNumber);
       this.sendIt(messageContent, don.mobile);
     },
     priced: function (don) {
-      var messageContent = {
-        message: 'تسعيرة طلبك جاهزة\n' +
-          'شوف السعر و أكد طلبك من الرابط :\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile + '/?confirmToken=' + don.confirmToken + '\nرمز التأكيد :\n' + don.confirmToken
-      };
+      var messageContent = this.generateMessageContent('تسعيرة طلبك جاهزة\n' +'شوف السعر و أكد طلبك من الرابط :\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile + '/?confirmToken=' + don.confirmToken + '\nرمز التأكيد :\n' + don.confirmToken);
       this.sendIt(messageContent, don.mobile);
     },
     notfound: function (don) {
-      var messageContent = {
-        message: 'عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة للطلب رقم ' + don.orderNumber + '\nنعدك بتحسين خدماتنا وتوفير قطع أكثر في المرات القادمة.'
-      };
+      var messageContent = this.generateMessageContent('عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة للطلب رقم ' + don.orderNumber + '\nنعدك بتحسين خدماتنا وتوفير قطع أكثر في المرات القادمة.');
       this.sendIt(messageContent, don.mobile);
     },
     changetype: function (don) {
       var currentpt = (don.partType === 'up' ? 'up' : 'np');
       var otherpt = (don.partType === 'up' ? 'np' : 'up');
-      var messageContent = {
-        message: 'عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة في قسم ' + translate[currentpt] + '\n' +
-          'لطلب القطعة من قسم :' + translate[otherpt] + '\nhttps://' + process.env.SITE_URL + '/switch-request/' + don.orderNumber + '/' + don.mobile + '/' + don.confirmToken + '/'
-      };
+      var messageContent = this.generateMessageContent('عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة في قسم ' + translate[currentpt] + '\n' +
+          'لطلب القطعة من قسم :' + translate[otherpt] + '\nhttps://' + process.env.SITE_URL + '/switch-request/' + don.orderNumber + '/' + don.mobile + '/' + don.confirmToken + '/');
       this.sendIt(messageContent, don.mobile);
     },
     notavailable: function (don) {
       var currentpt = (don.partType === 'up' ? 'up' : 'np');
       var otherpt = (don.partType === 'up' ? 'np' : 'up');
-      var messageContent = {
-        message: 'عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة في قسم ' + translate[currentpt] + '\n' +
-          'لطلب القطعة من قسم :' + translate[otherpt] + '\nhttps://' + process.env.SITE_URL + '/switch-request/' + don.orderNumber + '/' + don.mobile + '/' + don.confirmToken + '/'
-      };
+      var messageContent = this.generateMessageContent('عميلنا العزيز..\n للأسف لم نتمكن من توفير القطعة المطلوبة في قسم ' + translate[currentpt] + '\n' +
+          'لطلب القطعة من قسم :' + translate[otherpt] + '\nhttps://' + process.env.SITE_URL + '/switch-request/' + don.orderNumber + '/' + don.mobile + '/' + don.confirmToken + '/');
       this.sendIt(messageContent, don.mobile);
     },
     pendingfromvendor: function (don) {
-      var messageContent = {
-        message: 'عميلنا العزيز..\n لا زال طلبك رقم : ' + don.orderNumber + '، في انتظار التسعيرة'
-      };
+      var messageContent = this.generateMessageContent('عميلنا العزيز..\n لا زال طلبك رقم : ' + don.orderNumber + '، في انتظار التسعيرة');
       this.sendIt(messageContent, don.mobile);
     },
     incomplete: function (don) {
-      var messageContent = {
-        message: 'بيانات طلبك غير مكتملة، من صفحة الطلب اختر تعديل و ادخل البيانات المطلوبة\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile
-      };
+      var messageContent = this.generateMessageContent('بيانات طلبك غير مكتملة، من صفحة الطلب اختر تعديل و ادخل البيانات المطلوبة\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile);
       this.sendIt(messageContent, don.mobile);
     },
     confirmed: function (don){
-      var messageContent = {
-        message: 'تم تأكيد طلبك، فضلا قم بقراءة الشروط و الاحكام قبل الدفع و طلب التوصيل\n' +
+      var messageContent = this.generateMessageContent('تم تأكيد طلبك، فضلا قم بقراءة الشروط و الاحكام قبل الدفع و طلب التوصيل\n' +
         'https://autotash.net/terms' + '\n' +
-        'شكرا لك.'
-      };
+        'شكرا لك.');
       this.sendIt(messageContent, don.mobile);
     },
     confirmToken: function (don) {
-      var messageContent = {
-        message: 'لإجراء اي تعديلات على طلبك رقم : ' +
-        don.orderNumber + '، قم بإستعمال رمز التأكيد : \n' + don.confirmToken
-      };
+      var messageContent = this.generateMessageContent('لإجراء اي تعديلات على طلبك رقم : ' +
+        don.orderNumber + '، قم بإستعمال رمز التأكيد : \n' + don.confirmToken);
       this.sendIt(messageContent, don.mobile);
     },
     delivered: function (don) {
-      var messageContent = {
-        message: 'تم توصيل طلبك رقم :' + don.orderNumber + ' بنجاح.\n' +
+      var messageContent = this.generateMessageContent('تم توصيل طلبك رقم :' + don.orderNumber + ' بنجاح.\n' +
           'نتمنى ان خدمتنا عجبتك، و اذا عندك اي ملاحظة صغيرة او كبيرة نحب نسمعها منك على ايميل الدعم' +
-          '\nsupport@autotash.net\nشكرا لك'
-      };
+          '\nsupport@autotash.net\nشكرا لك');
       this.sendIt(messageContent, don.mobile);
     },
     sendBill: function (don) {
-      var messageContent = {
-        message: 'تم اصدار فاتورة لطلبك رقم :' + don.orderNumber + '\nلتحميل الفاتورة :\n' +
-          'https://' + process.env.SITE_URL + '/bills/' + don.orderNumber + '-' + don.mobile + '.pdf'
-      };
+      var messageContent = this.generateMessageContent('تم اصدار فاتورة لطلبك رقم :' + don.orderNumber + '\nلتحميل الفاتورة :\n' +
+          'https://' + process.env.SITE_URL + '/bills/' + don.orderNumber + '-' + don.mobile + '.pdf');
       this.sendIt(messageContent, don.mobile);
     },
     requestedImage: function (don) {
-      var messageContent = {
-        message: 'تم رفع صورة القطعة المطلوبة بناء على طلبكم.' +
+      var messageContent = this.generateMessageContent('تم رفع صورة القطعة المطلوبة بناء على طلبكم.' +
         '\nلمشاهدة صورة القطعة :' +
-        '\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile
-      };
+        '\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile);
       this.sendIt(messageContent, don.mobile);
     },
     notdecided: function (don) {
-      var messageContent = {
-        message: 'طلبك موجود عندنا، و تقدر تأكده في اي وقت،\n' + 'رابط الطلب' +
+      var messageContent = this.generateMessageContent('طلبك موجود عندنا، و تقدر تأكده في اي وقت،\n' + 'رابط الطلب' +
         '\nhttps://' + process.env.SITE_URL + '/show-request/' + don.orderNumber + '/' + don.mobile + '\n' +
-        'اذا عندك اي استفسار تقدر تراسلنا على \nsupport@autotash.net'
-      };
+        'اذا عندك اي استفسار تقدر تراسلنا على \nsupport@autotash.net');
       this.sendIt(messageContent, don.mobile);
     },
     newuser: function (don) {
-      var messageContent = {
-        message: 'تم انشاء حسابك في اوتوتاش' + '\n' +
+      var messageContent = this.generateMessageContent('تم انشاء حسابك في اوتوتاش' + '\n' +
         'اسم المستخدم : ' + don.username + '\n' +
         'كلمة المرور : ' + don.password + '\n' +
-        '\nhttps://' + process.env.SITE_URL + '/login/'
-      };
+        '\nhttps://' + process.env.SITE_URL + '/login/');
       this.sendIt(messageContent, don.mobile);
     },
     changepassword: function (don) {
-      var messageContent = {
-        message: 'تم تغيير كلمة المرور الخاصة بك :' + '\n' +
+      var messageContent = this.generateMessageContent('تم تغيير كلمة المرور الخاصة بك :' + '\n' +
         'اسم المستخدم : ' + don.username + '\n' +
         'كلمة المرور : ' + don.password + '\n' +
-        '\nhttps://' + process.env.SITE_URL + '/login/'
-      };
+        '\nhttps://' + process.env.SITE_URL + '/login/');
       this.sendIt(messageContent, don.mobile);
     },
     returned: function (don) {
-      var messageContent = {
-        message: 'نأسف لإرجاعك طلبك، في حالة تم الدفع عبر حوالة بنكية، سيتم ارجاع المبلغ إلى حسابكم في خلال ثلاثة أيام عمل كحد أقصى.\n' +
-        'نعدكم بتحسين خدماتنا مستقبلا.'
-      };
+      var messageContent = this.generateMessageContent('نأسف لإرجاعك طلبك، في حالة تم الدفع عبر حوالة بنكية، سيتم ارجاع المبلغ إلى حسابكم في خلال ثلاثة أيام عمل كحد أقصى.\n' +
+        'نعدكم بتحسين خدماتنا مستقبلا.');
       this.sendIt(messageContent, don.mobile);
     },
     vendor_newRequest: function (don) {
       var url = 'https://' + process.env.SITE_URL + '/vendors/edit-quota/' + don.rid + '/';
       rp(postOptionUrl(url), function (error, response, body) {
-        var messageContent = {
-          message: 'لديك طلب جديد بحاجة إلى تسعير\n' +
+        var messageContent = this.generateMessageContent('لديك طلب جديد بحاجة إلى تسعير\n' +
               'رقم الطلب : ' + don.orderNumber +
               '\nنوع السيارة : ' + don.brand +
               '\nرابط الطلب : ' +
-              '\n' + (response ? response.body.shortUrl : url)
-        };
+              '\n' + (response ? response.body.shortUrl : url));
         _.sendIt(messageContent, don.mobileVendor);
         if (error) {
           console.log(error);
@@ -187,6 +154,8 @@ exports.sms = function () {
   };
   return smsFunctions;
 };
+
+
 exports.slackNotifications = function (req, res) {
   // Slack notifications
   var deliveryChannel = 'someurl',
